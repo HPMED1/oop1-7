@@ -1,0 +1,1998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz</title>
+
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+        svg: { fontCache: 'global' },
+        startup: { ready: () => { console.log('MathJax is ready to go!'); MathJax.startup.defaultReady(); } }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            /* Light Theme (default) */
+            --primary-color: #0056b3; 
+            --secondary-color: #007bff; 
+            --accent-color: #28a745;
+            --background-gradient: linear-gradient(135deg, #f5f7fa, #c3cfe2); 
+            --text-color: #333;
+            --light-text-color: #f8f9fa; 
+            --container-bg: rgba(255, 255, 255, 0.98);
+            --border-radius: 10px; 
+            --box-shadow-main: 0 8px 25px rgba(0, 0, 0, 0.1);
+            --box-shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
+            
+            --border-color-soft: #e0e0e0;
+            --border-color-medium: #d4d4d4;
+            --border-color-strong: #c0c0c0;
+
+            --button-bg-light: #f0f0f0; 
+            --button-text-light: var(--primary-color);
+            --button-hover-bg-light: #e9e9e9;
+            --button-border-light: #d4d4d4;
+            
+            --option-bg: #f9f9f9;
+            --option-border: #eee;
+            --option-hover-bg: #f0f0f0;
+            --option-hover-border: #d4d4d4;
+            --option-selected-bg: #e0eafc; 
+            --option-selected-border: var(--primary-color);
+            --option-selected-text-color: var(--primary-color);
+
+            --answer-bg: #e9f7fe;
+            --answer-border: #bce0fd;
+            --answer-text: var(--primary-color);
+            --answer-notes-text: #555;
+
+            --status-indicator-default: #ccc;
+            --status-indicator-completed-on-active: #a7d7b5;
+
+            --progress-bar-track-bg: #e0e0e0;
+            --progress-text-color: var(--primary-color);
+            --progress-container-bg: #f8f9fa;
+            --progress-container-border: #e9ecef;
+
+            --subtitle-color: #555;
+            --toggle-button-bg: #f0f0f0;
+            --toggle-button-text: #333;
+            --toggle-button-border: #ccc;
+            --toggle-button-hover-bg: #e0e0e0;
+            --toggle-button-hover-border: #bbb;
+
+            --results-correct-bg: #e6ffed; 
+            --results-correct-border: #a3d9b1;
+            --results-incorrect-bg: #ffebee; 
+            --results-incorrect-border: #f1b0b7;
+            --results-text-color: #333;
+        }
+
+        body.dark-mode {
+            --primary-color: #5cadff; 
+            --secondary-color: #3498db;
+            --accent-color: #30c050; 
+            --background-gradient: linear-gradient(135deg, #2c3e50, #1a252f);
+            --text-color: #e0e0e0;
+            --light-text-color: #e0e0e0; 
+            --container-bg: rgba(35, 45, 60, 0.98);
+            --box-shadow-main: 0 8px 25px rgba(0, 0, 0, 0.25);
+            --box-shadow-hover: 0 4px 12px rgba(0,0,0,0.2);
+
+            --border-color-soft: #4a4a5a;
+            --border-color-medium: #5f5f6f;
+            --border-color-strong: #737383;
+
+            --button-bg-light: #3a3a4a;
+            --button-text-light: var(--primary-color); 
+            --button-hover-bg-light: #4a4a5a;
+            --button-border-light: #5f5f6f; 
+
+            --option-bg: #2f2f3f;
+            --option-border: #404050;
+            --option-hover-bg: #393949;
+            --option-hover-border: #505060;
+            --option-selected-bg: #3b5078; 
+            --option-selected-border: var(--primary-color);
+            --option-selected-text-color: var(--light-text-color);
+
+            --answer-bg: #2a3f50;
+            --answer-border: #3f6082;
+            --answer-text: var(--primary-color);
+            --answer-notes-text: #bbb;
+
+            --status-indicator-default: #777;
+            --status-indicator-completed-on-active: #8fbc8f; 
+
+            --progress-bar-track-bg: #444;
+            --progress-text-color: var(--primary-color);
+            --progress-container-bg: #2a2a3a;
+            --progress-container-border: #3f3f4f;
+            
+            --subtitle-color: #aaa;
+            --toggle-button-bg: #4a4a5a;
+            --toggle-button-text: #e0e0e0;
+            --toggle-button-border: #666;
+            --toggle-button-hover-bg: #5a5a6a;
+            --toggle-button-hover-border: #777;
+
+            --results-correct-bg: #3a593f; 
+            --results-correct-border: #527558;
+            --results-incorrect-bg: #5c3b3e; 
+            --results-incorrect-border: #7d5a5e;
+            --results-text-color: #e0e0e0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+            line-height: 1.65; background: var(--background-gradient); color: var(--text-color);
+            padding: 20px; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        .quiz-container {
+            max-width: 1000px; width: 100%; margin: 20px auto; background: var(--container-bg);
+            padding: 25px 30px; border-radius: var(--border-radius); box-shadow: var(--box-shadow-main);
+            animation: fadeInScaleUp 0.5s ease-out; transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+        @keyframes fadeInScaleUp { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+        
+        .quiz-header { text-align: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color-soft); position: relative; }
+        .quiz-title { color: var(--primary-color); font-size: 2rem; font-weight: 600; margin-bottom: 8px; }
+        .quiz-subtitle { color: var(--subtitle-color); font-size: 1rem; }
+        
+        .view-mode-selector { 
+            text-align: center; margin-bottom: 20px; padding: 10px; 
+            background-color: var(--progress-container-bg); 
+            border-radius: var(--border-radius); border: 1px solid var(--progress-container-border);
+            display: flex; justify-content: center; align-items: center; flex-wrap: wrap; 
+        }
+        .view-mode-selector input[type="radio"] {
+            display: none; /* Hide default radio */
+        }
+        .view-mode-selector label {
+            padding: 7px 14px; 
+            border: 2px solid var(--button-border-light); 
+            border-radius: var(--border-radius);
+            margin: 5px; 
+            font-size: 0.9rem; 
+            color: var(--text-color); 
+            cursor:pointer;
+            transition: all 0.2s ease;
+            background-color: var(--button-bg-light); /* Give unselected a button look */
+        }
+        .view-mode-selector label:hover {
+            background-color: var(--button-hover-bg-light);
+            border-color: var(--border-color-strong);
+        }
+        .view-mode-selector label.view-mode-selected {
+            background-color: var(--primary-color);
+            color: var(--light-text-color);
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+        body.dark-mode .view-mode-selector label.view-mode-selected {
+            color: #000; /* Dark text for light blue primary color in dark mode */
+        }
+
+        #darkModeToggleBtn {
+            padding: 7px 14px; /* Match label padding */
+            border-radius: var(--border-radius); /* Match label radius */
+            cursor: pointer; font-size: 0.9rem; /* Match label font size */
+            background-color: var(--toggle-button-bg); color: var(--toggle-button-text);
+            border: 2px solid var(--toggle-button-border); /* Match label border */
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+            margin: 5px; /* Match label margin */
+        }
+        #darkModeToggleBtn:hover { background-color: var(--toggle-button-hover-bg); border-color: var(--toggle-button-hover-border); }
+
+        #mathjax-warning-placeholder { display: none; }
+        
+        .lecture-nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+        .lecture-btn {
+            padding: 9px 14px; background-color: var(--button-bg-light); color: var(--button-text-light); border: 1px solid var(--button-border-light);
+            border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.25s ease; min-width: 100px;
+            display: flex; align-items: center; justify-content: center; font-size:0.9rem;
+        }
+        .lecture-btn:hover { background-color: var(--button-hover-bg-light); border-color: var(--border-color-strong); transform: translateY(-1px); }
+        .lecture-btn.active {
+            background-color: var(--primary-color); color: var(--light-text-color); border-color: var(--primary-color);
+            font-weight: 600; box-shadow: 0 2px 8px rgba(0, 86, 179, 0.2);
+        }
+        body.dark-mode .lecture-btn.active { box-shadow: 0 2px 8px rgba(var(--primary-color), 0.3); }
+        
+        .status-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 8px; background-color: var(--status-indicator-default); transition: background-color 0.3s ease; }
+        .status-indicator.completed { background-color: var(--accent-color); }
+        .lecture-btn.active .status-indicator.completed { background-color: var(--status-indicator-completed-on-active); }
+        
+        .progress-container { display: flex; justify-content: space-between; align-items: center; margin: 25px 0; padding: 12px 15px; background-color: var(--progress-container-bg); border-radius: var(--border-radius); border: 1px solid var(--progress-container-border);}
+        #progressText, #completedCount { font-weight: 500; color: var(--progress-text-color); white-space: nowrap; font-size: 0.9rem;}
+        .progress-bar { flex-grow: 1; height: 10px; background-color: var(--progress-bar-track-bg); border-radius: 10px; margin: 0 15px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-color), var(--secondary-color)); border-radius: 10px; transition: width 0.4s ease-out; }
+        
+        .chapter-title { color: var(--primary-color); border-bottom: 1px solid var(--border-color-soft); padding-bottom: 10px; margin: 30px 0 20px; font-size: 1.5rem; font-weight: 500; }
+        .question-type-title { color: var(--secondary-color); margin: 25px 0 15px; font-size: 1.25rem; padding-left: 10px; border-left: 3px solid var(--secondary-color); font-weight: 500;}
+        
+        .question-block {
+            margin-bottom: 20px; padding: 18px; border: 1px solid var(--border-color-soft); border-radius: var(--border-radius);
+            background-color: var(--container-bg); 
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-left 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+            position: relative;
+        }
+        .question-block.answered { border-left: 4px solid var(--accent-color); }
+        .question-block:hover { transform: translateY(-2px); box-shadow: var(--box-shadow-hover); }
+        
+        .question-text { font-weight: 500; margin-bottom: 15px; font-size: 1.05rem; color: var(--text-color); }
+        .question-text img { max-width: 100%; height: auto; margin-top: 10px; border-radius: 5px; border: 1px solid var(--option-border); display: block; }
+        
+        .options { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px; }
+        .options input[type="radio"] { display: none; }
+        .options label {
+            display: flex; align-items: center; padding: 10px 12px; background: var(--option-bg); border-radius: 6px;
+            cursor: pointer; transition: all 0.2s ease; border: 2px solid var(--option-border); 
+            font-size: 0.95rem; color: var(--text-color);
+        }
+        .options label:hover { background-color: var(--option-hover-bg); border-color: var(--option-hover-border); }
+        .options label.option-selected {
+            background-color: var(--option-selected-bg); border-color: var(--option-selected-border);
+            font-weight: 600; 
+        }
+        .options label.option-selected span { color: var(--option-selected-text-color); }
+
+        .show-answer-btn {
+            padding: 8px 15px; background-color: var(--accent-color); color: var(--light-text-color); border: none;
+            border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.2s ease; display: inline-block; margin-top: 10px; font-size: 0.9rem;
+        }
+        body.dark-mode .show-answer-btn { color: #000; }
+        body:not(.dark-mode) .show-answer-btn { color: var(--light-text-color); }
+        .show-answer-btn:hover { background-color: #218838; transform: translateY(-1px); } 
+        body.dark-mode .show-answer-btn:hover { background-color: #25a040; } 
+
+        .answer {
+            display: none; margin-top: 12px; padding: 12px; background-color: var(--answer-bg); border: 1px solid var(--answer-border);
+            border-radius: 6px; color: var(--answer-text); font-weight: 500; animation: fadeInAnswer 0.4s ease; font-size: 0.95rem;
+        }
+        .answer strong { font-weight: 600; } 
+        .answer em { font-style: italic; color: var(--answer-notes-text); font-size: 0.9em; }
+        @keyframes fadeInAnswer { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #singleQuestionContainer { padding: 15px; margin-bottom: 20px; }
+        #singleQuestionNavContainer { text-align: center; margin-top: 20px; }
+        #singleQuestionNavContainer button {
+            padding: 10px 20px; font-size: 1rem; margin: 0 5px;
+            background-color: var(--primary-color); color: var(--light-text-color);
+            border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease;
+        }
+        #singleQuestionNavContainer button:hover { background-color: var(--secondary-color); }
+        #singleQuestionNavContainer button:disabled { background-color: #ccc; cursor: not-allowed; }
+        body.dark-mode #singleQuestionNavContainer button:disabled { background-color: #555; }
+
+        .results-summary { text-align: center; margin-bottom: 25px; }
+        .results-summary h2 { color: var(--primary-color); font-size: 1.8rem; margin-bottom: 10px; }
+        .results-summary p { font-size: 1.2rem; color: var(--text-color); margin-bottom: 20px; }
+        
+        .result-question-block { margin-bottom: 15px; padding: 15px; border-radius: var(--border-radius); border: 1px solid; color: var(--results-text-color); }
+        .result-question-block.correct { background-color: var(--results-correct-bg); border-color: var(--results-correct-border); }
+        .result-question-block.incorrect { background-color: var(--results-incorrect-bg); border-color: var(--results-incorrect-border); }
+        .result-question-block p { margin-bottom: 8px; font-size: 0.95rem;}
+        .result-question-block .user-answer, .result-question-block .correct-answer-text { font-weight: bold; }
+        .result-question-block .notes { font-style: italic; font-size: 0.9em; color: var(--answer-notes-text); margin-top:5px; }
+
+        .contact-note {
+            text-align: center; margin-top: 30px; padding-top: 20px;
+            border-top: 1px solid var(--border-color-soft);
+            font-size: 0.85rem; color: var(--subtitle-color);
+        }
+        .contact-note p { margin-bottom: 0; }
+        .contact-note a { color: var(--primary-color); text-decoration: none; font-weight: 500; }
+        .contact-note a:hover { text-decoration: underline; }
+
+        mjx-container { overflow-x: hidden; overflow-y: hidden; max-width: 100%; text-align: left; display: inline-block; vertical-align: middle; margin-top: 0.2em; margin-bottom: 0.2em; }
+        
+        @media (max-width: 768px) {
+            .quiz-container { padding: 20px 15px; } .quiz-title { font-size: 1.8rem; }
+            .lecture-nav { flex-direction: column; align-items: stretch; }
+            .lecture-btn { width: 100%; margin-bottom: 6px; }
+            .progress-container { flex-direction: column; text-align: center; gap: 8px; }
+            .progress-bar { width: 100%; margin: 8px 0; }
+            .chapter-title { font-size: 1.3rem;} .question-type-title { font-size: 1.1rem;}
+            .question-text { font-size: 1rem;}
+            
+            .view-mode-selector { flex-direction: column; } 
+            .view-mode-selector label, #darkModeToggleBtn { 
+                width: 90%; /* Make them take up more width */
+                max-width: 280px; /* But not excessively wide */
+                display: block; 
+                margin: 8px auto; /* Center them when stacked */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1 class="quiz-title" id="quizTitleElement">Interactive Quiz</h1>
+            <p class="quiz-subtitle" id="quizSubtitleElement">Made By Ahmed Khalid</p>
+        </div>
+        
+        <div class="view-mode-selector" id="viewModeSelector">
+            <label for="viewModeList"><input type="radio" name="viewMode" value="list" id="viewModeList" checked> List View</label>
+            <label for="viewModeSingle"><input type="radio" name="viewMode" value="single" id="viewModeSingle"> Single Question View</label>
+            <button id="darkModeToggleBtn">Toggle Theme</button>
+        </div>
+
+        <div id="mathjax-warning-placeholder"></div> <!-- Kept for structure, but not displayed -->
+        <div class="lecture-nav" id="lectureNav"></div>
+        
+        <div class="progress-container" id="progressContainer">
+            <span id="progressText">Progress: 0%</span>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%;"></div></div>
+            <span id="completedCount">0/0 questions</span>
+        </div>
+        
+        <div id="quizContent"></div>
+
+        <div class="contact-note">
+            <p>Want your course materials or test banks transformed into an interactive quiz like this? 
+               <a href="mailto:nerohpmed@gmail.com?subject=Interactive Quiz Inquiry">Contact me</a>!
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const quizData = {
+                lectures: [
+    {
+      "id": "lecture_1",
+      "title": "Classes and Objects",
+      "questions": [
+        {
+          "type": "mcq",
+          "text": "Structured programming represents a program that uses a set of _____, while OOP represents a program using a set of objects and their interactions.",
+          "options": [
+            { "id": "a", "text": "classes" },
+            { "id": "b", "text": "modules or functions" },
+            { "id": "c", "text": "methods" },
+            { "id": "d", "text": "variables" }
+          ],
+          "answer": "b",
+          "notes": "Structured programming uses modules or functions, while OOP uses objects and their interactions."
+        },
+        {
+          "type": "mcq",
+          "text": "An _____ is any entity that has a state and a behavior.",
+          "options": [
+            { "id": "a", "text": "class" },
+            { "id": "b", "text": "object" },
+            { "id": "c", "text": "method" },
+            { "id": "d", "text": "variable" }
+          ],
+          "answer": "b",
+          "notes": "An object is an entity with state (attributes) and behavior (methods)."
+        },
+        {
+          "type": "mcq",
+          "text": "An object is an _____ of a class.",
+          "options": [
+            { "id": "a", "text": "method" },
+            { "id": "b", "text": "instance" },
+            { "id": "c", "text": "property" },
+            { "id": "d", "text": "variable" }
+          ],
+          "answer": "b",
+          "notes": "An object is an instance of a class."
+        },
+        {
+          "type": "mcq",
+          "text": "The behavior of an object is _____.",
+          "options": [
+            { "id": "a", "text": "the values of its fields" },
+            { "id": "b", "text": "the set of operations that the object can perform" },
+            { "id": "c", "text": "the class it belongs to" },
+            { "id": "d", "text": "the memory it occupies" }
+          ],
+          "answer": "b",
+          "notes": "Behavior refers to the operations (methods) an object can perform."
+        },
+        {
+          "type": "mcq",
+          "text": "In OOP, a class is a ______ for objects, and an object is an instance of a class.",
+          "options": [
+            { "id": "a", "text": "method" },
+            { "id": "b", "text": "variable" },
+            { "id": "c", "text": "template (or blueprint)" },
+            { "id": "d", "text": "function" }
+          ],
+          "answer": "c",
+          "notes": "A class serves as a template or blueprint for creating objects."
+        },
+        {
+          "type": "mcq",
+          "text": "Attributes are represented using _____, while operations are represented using _____.",
+          "options": [
+            { "id": "a", "text": "methods, fields" },
+            { "id": "b", "text": "variables (called fields), methods" },
+            { "id": "c", "text": "classes, objects" },
+            { "id": "d", "text": "properties, indexers" }
+          ],
+          "answer": "b",
+          "notes": "Attributes are fields (variables), and operations are methods."
+        },
+        {
+          "type": "mcq",
+          "text": "To create a class, use the ______ keyword.",
+          "options": [
+            { "id": "a", "text": "object" },
+            { "id": "b", "text": "new" },
+            { "id": "c", "text": "class" },
+            { "id": "d", "text": "create" }
+          ],
+          "answer": "c",
+          "notes": "The 'class' keyword is used to define a class."
+        },
+        {
+          "type": "mcq",
+          "text": "The ______ section stores instructions (code).",
+          "options": [
+            { "id": "a", "text": "Data" },
+            { "id": "b", "text": "Text" },
+            { "id": "c", "text": "Stack" },
+            { "id": "d", "text": "Heap" }
+          ],
+          "answer": "b",
+          "notes": "The Text section stores executable code."
+        },
+        {
+          "type": "mcq",
+          "text": "The ______ section stores global variables.",
+          "options": [
+            { "id": "a", "text": "Text" },
+            { "id": "b", "text": "Data" },
+            { "id": "c", "text": "Stack" },
+            { "id": "d", "text": "Heap" }
+          ],
+          "answer": "b",
+          "notes": "The Data section stores global variables."
+        },
+        {
+          "type": "mcq",
+          "text": "The ____ stores automatic (i.e. local) variables.",
+          "options": [
+            { "id": "a", "text": "Text section" },
+            { "id": "b", "text": "Data section" },
+            { "id": "c", "text": "Stack" },
+            { "id": "d", "text": "Heap" }
+          ],
+          "answer": "c",
+          "notes": "The Stack stores local variables."
+        },
+        {
+          "type": "mcq",
+          "text": "The ____ stores dynamically allocated data (e.g. arrays, objects).",
+          "options": [
+            { "id": "a", "text": "Text section" },
+            { "id": "b", "text": "Data section" },
+            { "id": "c", "text": "Stack" },
+            { "id": "d", "text": "Heap" }
+          ],
+          "answer": "d",
+          "notes": "The Heap stores dynamically allocated data."
+        },
+        {
+          "type": "mcq",
+          "text": "In OOP, objects interact to ____.",
+          "options": [
+            { "id": "a", "text": "define variables" },
+            { "id": "b", "text": "store methods" },
+            { "id": "c", "text": "achieve program goals" },
+            { "id": "d", "text": "apply encapsulation" }
+          ],
+          "answer": "c",
+          "notes": "Objects interact to achieve the program's goals."
+        },
+        {
+          "type": "mcq",
+          "text": "An ____ is an instance of a class.",
+          "options": [
+            { "id": "a", "text": "method" },
+            { "id": "b", "text": "object" },
+            { "id": "c", "text": "property" },
+            { "id": "d", "text": "variable" }
+          ],
+          "answer": "b",
+          "notes": "An object is an instance of a class."
+        }
+      ]
+    },
+    {
+      "id": "lecture_2",
+      "title": "Class Members",
+      "questions": [
+        {
+          "type": "mcq",
+          "text": "You can access class members by creating an object of the class, and by using the ____ syntax.",
+          "options": [
+            { "id": "a", "text": "arrow (->)" },
+            { "id": "b", "text": "dot (.)" },
+            { "id": "c", "text": "colon (.)" },
+            { "id": "d", "text": "semicolon (;)" }
+          ],
+          "answer": "b",
+          "notes": "The dot (.) syntax is used to access class members."
+        },
+        {
+          "type": "mcq",
+          "text": "By default, class members are ____.",
+          "options": [
+            { "id": "a", "text": "public" },
+            { "id": "b", "text": "internal" },
+            { "id": "c", "text": "private" },
+            { "id": "d", "text": "protected internal" }
+          ],
+          "answer": "c",
+          "notes": "Class members are private by default."
+        },
+        {
+          "type": "mcq",
+          "text": "To access private fields, a class provides ____.",
+          "options": [
+            { "id": "a", "text": "base class access" },
+            { "id": "b", "text": "protected scope" },
+            { "id": "c", "text": "public members" },
+            { "id": "d", "text": "static accessors" }
+          ],
+          "answer": "c",
+          "notes": "Public members (like getters/setters) provide access to private fields."
+        },
+        {
+          "type": "mcq",
+          "text": "The keyword used to set member visibility is ____.",
+          "options": [
+            { "id": "a", "text": "static" },
+            { "id": "b", "text": "public" },
+            { "id": "c", "text": "sealed" },
+            { "id": "d", "text": "abstract" }
+          ],
+          "answer": "b",
+          "notes": "The 'public' keyword sets member visibility."
+        },
+        {
+          "type": "mcq",
+          "text": "The values of the fields of a given object represent its ____.",
+          "options": [
+            { "id": "a", "text": "behavior" },
+            { "id": "b", "text": "methods" },
+            { "id": "c", "text": "state" },
+            { "id": "d", "text": "class" }
+          ],
+          "answer": "c",
+          "notes": "The state of an object is defined by its field values."
+        },
+        {
+          "type": "mcq",
+          "text": "Object methods define how an object of a class ____.",
+          "options": [
+            { "id": "a", "text": "is created" },
+            { "id": "b", "text": "behaves" },
+            { "id": "c", "text": "is destroyed" },
+            { "id": "d", "text": "is stored" }
+          ],
+          "answer": "b",
+          "notes": "Methods define the behavior of an object."
+        },
+        {
+          "type": "mcq",
+          "text": "A static member can be declared using the keyword ____.",
+          "options": [
+            { "id": "a", "text": "public" },
+            { "id": "b", "text": "private" },
+            { "id": "c", "text": "static" },
+            { "id": "d", "text": "protected" }
+          ],
+          "answer": "c",
+          "notes": "The 'static' keyword is used to declare static members."
+        },
+        {
+          "type": "mcq",
+          "text": "Static class ____.",
+          "options": [
+            { "id": "a", "text": "can have non-static members" },
+            { "id": "b", "text": "has only static members" },
+            { "id": "c", "text": "can be instantiated" },
+            { "id": "d", "text": "must inherit from base" }
+          ],
+          "answer": "b",
+          "notes": "A static class contains only static members."
+        },
+        {
+          "type": "mcq",
+          "text": "A static field ____.",
+          "options": [
+            { "id": "a", "text": "changes with each object" },
+            { "id": "b", "text": "exists only once" },
+            { "id": "c", "text": "is tied to instance" },
+            { "id": "d", "text": "requires new keyword" }
+          ],
+          "answer": "b",
+          "notes": "A static field is shared among all instances of a class."
+        },
+        {
+          "type": "mcq",
+          "text": "A static method belongs to the ____ rather than an object.",
+          "options": [
+            { "id": "a", "text": "program" },
+            { "id": "b", "text": "class" },
+            { "id": "c", "text": "namespace" },
+            { "id": "d", "text": "method" }
+          ],
+          "answer": "b",
+          "notes": "Static methods belong to the class, not individual objects."
+        },
+        {
+          "type": "mcq",
+          "text": "A static method is called directly by using the ____ itself.",
+          "options": [
+            { "id": "a", "text": "object name" },
+            { "id": "b", "text": "method name" },
+            { "id": "c", "text": "class name" },
+            { "id": "d", "text": "variable name" }
+          ],
+          "answer": "c",
+          "notes": "Static methods are called using the class name."
+        },
+        {
+          "type": "mcq",
+          "text": "Static fields serve as _____ that are always in memory.",
+          "options": [
+            { "id": "a", "text": "local variables" },
+            { "id": "b", "text": "global variables" },
+            { "id": "c", "text": "methods" },
+            { "id": "d", "text": "objects" }
+          ],
+          "answer": "b",
+          "notes": "Static fields act like global variables."
+        },
+        {
+          "type": "mcq",
+          "text": "A static class cannot be _____ and can have only static members.",
+          "options": [
+            { "id": "a", "text": "inherited" },
+            { "id": "b", "text": "instantiated" },
+            { "id": "c", "text": "overloaded" },
+            { "id": "d", "text": "overridden" }
+          ],
+          "answer": "b",
+          "notes": "Static classes cannot be instantiated."
+        },
+        {
+          "type": "mcq",
+          "text": "All members of a class are _____ by default.",
+          "options": [
+            { "id": "a", "text": "public" },
+            { "id": "b", "text": "private" },
+            { "id": "c", "text": "protected" },
+            { "id": "d", "text": "internal" }
+          ],
+          "answer": "b",
+          "notes": "Class members are private by default."
+        },
+        {
+          "type": "mcq",
+          "text": "A private class member is accessible only to _____.",
+          "options": [
+            { "id": "a", "text": "all classes" },
+            { "id": "b", "text": "its class" },
+            { "id": "c", "text": "derived classes" },
+            { "id": "d", "text": "the main method" }
+          ],
+          "answer": "b",
+          "notes": "Private members are accessible only within their own class."
+        },
+        {
+          "type": "mcq",
+          "text": "A public class member is accessible to _____.",
+          "options": [
+            { "id": "a", "text": "its class only" },
+            { "id": "b", "text": "derived classes only" },
+            { "id": "c", "text": "all classes" },
+            { "id": "d", "text": "static classes only" }
+          ],
+          "answer": "c",
+          "notes": "Public members are accessible to all classes."
+        },
+        {
+          "type": "mcq",
+          "text": "The public keyword is an _____.",
+          "options": [
+            { "id": "a", "text": "operator" },
+            { "id": "b", "text": "access modifier" },
+            { "id": "c", "text": "data type" },
+            { "id": "d", "text": "method" }
+          ],
+          "answer": "b",
+          "notes": "The 'public' keyword is an access modifier."
+        },
+        {
+          "type": "mcq",
+          "text": "Encapsulation (or data-hiding) allows for protecting data fields from having _____.",
+          "options": [
+            { "id": "a", "text": "public access" },
+            { "id": "b", "text": "invalid values" },
+            { "id": "c", "text": "static access" },
+            { "id": "d", "text": "method access" }
+          ],
+          "answer": "b",
+          "notes": "Encapsulation protects fields from invalid values."
+        }
+      ]
+    },
+    {
+      "id": "lecture_3",
+      "title": "Constructors & Destructors",
+      "questions": [
+        {
+          "type": "mcq",
+          "text": "A constructor is a special method that is called when ____.",
+          "options": [
+            { "id": "a", "text": "an object is destroyed" },
+            { "id": "b", "text": "an object is created" },
+            { "id": "c", "text": "a method is called" },
+            { "id": "d", "text": "a class is inherited" }
+          ],
+          "answer": "b",
+          "notes": "Constructors are called when an object is created."
+        },
+        {
+          "type": "mcq",
+          "text": "If no constructor is defined ____.",
+          "options": [
+            { "id": "a", "text": "object cannot be created" },
+            { "id": "b", "text": "error is raised" },
+            { "id": "c", "text": "C# provides a default one" },
+            { "id": "d", "text": "base class is used" }
+          ],
+          "answer": "c",
+          "notes": "A default constructor is provided if none is defined."
+        },
+        {
+          "type": "mcq",
+          "text": "Default constructor has ____.",
+          "options": [
+            { "id": "a", "text": "two parameters" },
+            { "id": "b", "text": "only fields" },
+            { "id": "c", "text": "no parameters" },
+            { "id": "d", "text": "a destructor" }
+          ],
+          "answer": "c",
+          "notes": "Default constructors are parameter-less."
+        },
+        {
+          "type": "mcq",
+          "text": "Constructor with parameters helps ____.",
+          "options": [
+            { "id": "a", "text": "remove methods" },
+            { "id": "b", "text": "inherit fields" },
+            { "id": "c", "text": "initialize fields" },
+            { "id": "d", "text": "call destructors" }
+          ],
+          "answer": "c",
+          "notes": "Parameterized constructors initialize fields."
+        },
+        {
+          "type": "mcq",
+          "text": "Overloaded constructors allow ____.",
+          "options": [
+            { "id": "a", "text": "single object only" },
+            { "id": "b", "text": "static field access" },
+            { "id": "c", "text": "multiple ways to initialize" },
+            { "id": "d", "text": "deletion of objects" }
+          ],
+          "answer": "c",
+          "notes": "Overloaded constructors provide multiple initialization options."
+        },
+        {
+          "type": "mcq",
+          "text": "The constructor name must match the ____.",
+          "options": [
+            { "id": "a", "text": "method name" },
+            { "id": "b", "text": "variable name" },
+            { "id": "c", "text": "class name" },
+            { "id": "d", "text": "object name" }
+          ],
+          "answer": "c",
+          "notes": "Constructors must have the same name as their class."
+        },
+        {
+          "type": "mcq",
+          "text": "A constructor cannot have a ____ type.",
+          "options": [
+            { "id": "a", "text": "parameter" },
+            { "id": "b", "text": "return" },
+            { "id": "c", "text": "access modifier" },
+            { "id": "d", "text": "static" }
+          ],
+          "answer": "b",
+          "notes": "Constructors do not have return types."
+        },
+        {
+          "type": "mcq",
+          "text": "The default constructor is ____.",
+          "options": [
+            { "id": "a", "text": "parameter-less" },
+            { "id": "b", "text": "static" },
+            { "id": "c", "text": "private" },
+            { "id": "d", "text": "abstract" }
+          ],
+          "answer": "a",
+          "notes": "Default constructors have no parameters."
+        },
+        {
+          "type": "mcq",
+          "text": "Using the keyword ____, we can fix the bug when constructor parameter has the same name as the field name.",
+          "options": [
+            { "id": "a", "text": "base" },
+            { "id": "b", "text": "this" },
+            { "id": "c", "text": "static" },
+            { "id": "d", "text": "new" }
+          ],
+          "answer": "b",
+          "notes": "The 'this' keyword resolves naming conflicts."
+        },
+        {
+          "type": "mcq",
+          "text": "A constructor can call another constructor using the ______ keyword.",
+          "options": [
+            { "id": "a", "text": "base" },
+            { "id": "b", "text": "this" },
+            { "id": "c", "text": "static" },
+            { "id": "d", "text": "new" }
+          ],
+          "answer": "b",
+          "notes": "The 'this' keyword is used to call another constructor in the same class."
+        },
+        {
+          "type": "mcq",
+          "text": "Unlike C++, C# does not provide a delete operator and uses a ______ instead.",
+          "options": [
+            { "id": "a", "text": "destructor" },
+            { "id": "b", "text": "garbage collector" },
+            { "id": "c", "text": "finalizer" },
+            { "id": "d", "text": "dispose method" }
+          ],
+          "answer": "b",
+          "notes": "C# uses garbage collection for memory management."
+        },
+        {
+          "type": "mcq",
+          "text": "A destructor is a special method that has the same name as its class but starts with a ______.",
+          "options": [
+            { "id": "a", "text": "dollar sign ($)" },
+            { "id": "b", "text": "tilde (~)" },
+            { "id": "c", "text": "hash (#)" },
+            { "id": "d", "text": "underscore ( )" }
+          ],
+          "answer": "b",
+          "notes": "Destructors start with a tilde (~)."
+        },
+        {
+          "type": "mcq",
+          "text": "A class can have ______ destructor(s).",
+          "options": [
+            { "id": "a", "text": "no" },
+            { "id": "b", "text": "only one" },
+            { "id": "c", "text": "two or more" },
+            { "id": "d", "text": "unlimited" }
+          ],
+          "answer": "b",
+          "notes": "A class can have only one destructor."
+        }
+      ]
+    },
+    {
+      "id": "lecture_4",
+      "title": "Objects, Methods, & Arrays",
+      "questions": [
+        {
+          "type": "mcq",
+          "text": "You can create a method that takes an arbitrary number of arguments using the ______ modifier.",
+          "options": [
+            { "id": "a", "text": "static" },
+            { "id": "b", "text": "params" },
+            { "id": "c", "text": "public" },
+            { "id": "d", "text": "virtual" }
+          ],
+          "answer": "b",
+          "notes": "The 'params' modifier allows variable-length argument lists."
+        },
+        {
+          "type": "mcq",
+          "text": "An array of a value-type (e.g. int) holds ____.",
+          "options": [
+            { "id": "a", "text": "references" },
+            { "id": "b", "text": "the actual values" },
+            { "id": "c", "text": "objects" },
+            { "id": "d", "text": "pointers" }
+          ],
+          "answer": "b",
+          "notes": "Value-type arrays hold actual values."
+        },
+        {
+          "type": "mcq",
+          "text": "An array of a reference-type holds ____.",
+          "options": [
+            { "id": "a", "text": "the actual values" },
+            { "id": "b", "text": "a set of references" },
+            { "id": "c", "text": "pointers only" },
+            { "id": "d", "text": "memory addresses" }
+          ],
+          "answer": "b",
+          "notes": "Reference-type arrays hold references to objects."
+        },
+        {
+          "type": "mcq",
+          "text": "An array of objects holds ____ rather than the objects themselves.",
+          "options": [
+            { "id": "a", "text": "values" },
+            { "id": "b", "text": "references to objects" },
+            { "id": "c", "text": "copies of objects" },
+            { "id": "d", "text": "pointers to memory" }
+          ],
+          "answer": "b",
+          "notes": "Object arrays store references, not the objects themselves."
+        },
+        {
+          "type": "mcq",
+          "text": "Creating a copy of a reference does not copy ____.",
+          "options": [
+            { "id": "a", "text": "the reference" },
+            { "id": "b", "text": "the object itself" },
+            { "id": "c", "text": "the memory address" },
+            { "id": "d", "text": "the variable name" }
+          ],
+          "answer": "b",
+          "notes": "Copying a reference does not copy the underlying object."
+        }
+      ]
+    },
+    {
+      "id": "lecture_5",
+      "title": "Properties and Indexers",
+      "questions": [
+        {
+          "type": "mcq",
+          "text": "A property is a class member that provides a flexible mechanism to access ______.",
+          "options": [
+            { "id": "a", "text": "a public field" },
+            { "id": "b", "text": "a private field" },
+            { "id": "c", "text": "a static field" },
+            { "id": "d", "text": "a protected field" }
+          ],
+          "answer": "b",
+          "notes": "Properties provide controlled access to private fields."
+        },
+        {
+          "type": "mcq",
+          "text": "A property has ______ accessor(s).",
+          "options": [
+            { "id": "a", "text": "one" },
+            { "id": "b", "text": "two" },
+            { "id": "c", "text": "three" },
+            { "id": "d", "text": "four" }
+          ],
+          "answer": "b",
+          "notes": "Properties typically have 'get' and 'set' accessors."
+        },
+        {
+          "type": "mcq",
+          "text": "The ______ accessor returns the value of the field.",
+          "options": [
+            { "id": "a", "text": "set" },
+            { "id": "b", "text": "get" },
+            { "id": "c", "text": "add" },
+            { "id": "d", "text": "remove" }
+          ],
+          "answer": "b",
+          "notes": "The 'get' accessor retrieves the field value."
+        },
+        {
+          "type": "mcq",
+          "text": "The ______ accessor assigns a value to the field.",
+          "options": [
+            { "id": "a", "text": "get" },
+            { "id": "b", "text": "set" },
+            { "id": "c", "text": "add" },
+            { "id": "d", "text": "remove" }
+          ],
+          "answer": "b",
+          "notes": "The 'set' accessor assigns a value to the field."
+        },
+        {
+          "type": "mcq",
+          "text": "The ______ keyword represents the value we assign to the property.",
+          "options": [
+            { "id": "a", "text": "this" },
+            { "id": "b", "text": "base" },
+            { "id": "c", "text": "value" },
+            { "id": "d", "text": "field" }
+          ],
+          "answer": "c",
+          "notes": "The 'value' keyword represents the assigned value."
+        },
+        {
+          "type": "mcq",
+          "text": "A property can be made read-only by providing only the ______ accessor.",
+          "options": [
+            { "id": "a", "text": "set" },
+            { "id": "b", "text": "get" },
+            { "id": "c", "text": "add" },
+            { "id": "d", "text": "remove" }
+          ],
+          "answer": "b",
+          "notes": "Read-only properties have only a 'get' accessor."
+        },
+        {
+          "type": "mcq",
+          "text": "A read-only property has _____.",
+          "options": [
+            { "id": "a", "text": "only get" },
+            { "id": "b", "text": "only set" },
+            { "id": "c", "text": "both get and set" },
+            { "id": "d", "text": "no accessors" }
+          ],
+          "answer": "a",
+          "notes": "Read-only properties include only a 'get' accessor."
+        },
+        {
+          "type": "mcq",
+          "text": "A property can be made write-only by providing the ______ accessor and not providing the ______ accessor.",
+          "options": [
+            { "id": "a", "text": "get, set" },
+            { "id": "b", "text": "set, get" },
+            { "id": "c", "text": "add, remove" },
+            { "id": "d", "text": "remove, add" }
+          ],
+          "answer": "b",
+          "notes": "Write-only properties have a 'set' but no 'get' accessor."
+        },
+        {
+          "type": "mcq",
+          "text": "A write-only auto property has _____.",
+          "options": [
+            { "id": "a", "text": "no set" },
+            { "id": "b", "text": "no field" },
+            { "id": "c", "text": "private get" },
+            { "id": "d", "text": "no keyword" }
+          ],
+          "answer": "c",
+          "notes": "Write-only auto properties have a private 'get' accessor."
+        },
+        {
+          "type": "mcq",
+          "text": "An ____ allows an object to be indexed just like arrays.",
+          "options": [
+            { "id": "a", "text": "properties" },
+            { "id": "b", "text": "indexer" },
+            { "id": "c", "text": "methods" },
+            { "id": "d", "text": "fields" }
+          ],
+          "answer": "b",
+          "notes": "Indexers enable array-like access to objects."
+        },
+        {
+          "type": "mcq",
+          "text": "An indexer enables _____.",
+          "options": [
+            { "id": "a", "text": "deleting fields" },
+            { "id": "b", "text": "overloading classes" },
+            { "id": "c", "text": "array-like access" },
+            { "id": "d", "text": "overriding objects" }
+          ],
+          "answer": "c",
+          "notes": "Indexers provide array-like access to object data."
+        },
+        {
+          "type": "mcq",
+          "text": "Indexers resemble properties except that their accessors take _____.",
+          "options": [
+            { "id": "a", "text": "no parameters" },
+            { "id": "b", "text": "parameters" },
+            { "id": "c", "text": "return values" },
+            { "id": "d", "text": "access modifiers" }
+          ],
+          "answer": "b",
+          "notes": "Indexer accessors take parameters."
+        },
+        {
+          "type": "mcq",
+          "text": "Indexers differ from properties by _____.",
+          "options": [
+            { "id": "a", "text": "using fields" },
+            { "id": "b", "text": "having accessors" },
+            { "id": "c", "text": "taking parameters" },
+            { "id": "d", "text": "returning void" }
+          ],
+          "answer": "c",
+          "notes": "Indexers are distinguished by their use of parameters."
+        },
+        {
+          "type": "mcq",
+          "text": "Indexers can be _____.",
+          "options": [
+            { "id": "a", "text": "recursive only" },
+            { "id": "b", "text": "single-use" },
+            { "id": "c", "text": "overloaded" },
+            { "id": "d", "text": "write-only" }
+          ],
+          "answer": "c",
+          "notes": "Indexers can be overloaded with different parameters."
+        }
+      ]
+    },
+    {
+      "id": "lecture_6",
+      "title": "Operator Overloading",
+      "questions": [
+        {
+          "type": "mcq",
+          "text": "An overloaded operator has a ______ and a ______.",
+          "options": [
+            { "id": "a", "text": "name, parameter" },
+            { "id": "b", "text": "return type, parameter list" },
+            { "id": "c", "text": "class, object" },
+            { "id": "d", "text": "field, method" }
+          ],
+          "answer": "b",
+          "notes": "Overloaded operators have a return type and parameter list."
+        },
+        {
+          "type": "mcq",
+          "text": "Operator overloading is done using ______.",
+          "options": [
+            { "id": "a", "text": "delegate" },
+            { "id": "b", "text": "method name" },
+            { "id": "c", "text": "operator keyword" },
+            { "id": "d", "text": "field name" }
+          ],
+          "answer": "c",
+          "notes": "The 'operator' keyword is used for overloading."
+        },
+        {
+          "type": "mcq",
+          "text": "Overloaded operators are methods with special names (the keyword ______ followed by the symbol).",
+          "options": [
+            { "id": "a", "text": "method" },
+            { "id": "b", "text": "operator" },
+            { "id": "c", "text": "function" },
+            { "id": "d", "text": "overload" }
+          ],
+          "answer": "b",
+          "notes": "Overloaded operators use the 'operator' keyword."
+        },
+        {
+          "type": "mcq",
+          "text": "Overloaded operator must be ______.",
+          "options": [
+            { "id": "a", "text": "non-static" },
+            { "id": "b", "text": "private" },
+            { "id": "c", "text": "static" },
+            { "id": "d", "text": "abstract" }
+          ],
+          "answer": "c",
+          "notes": "Overloaded operators must be static."
+        },
+        {
+          "type": "mcq",
+          "text": "Unary operators take ______ operand(s) and can be overloaded.",
+          "options": [
+            { "id": "a", "text": "no" },
+            { "id": "b", "text": "one" },
+            { "id": "c", "text": "two" },
+            { "id": "d", "text": "three" }
+          ],
+          "answer": "b",
+          "notes": "Unary operators work with one operand."
+        },
+        {
+          "type": "mcq",
+          "text": "Unary operators take ______.",
+          "options": [
+            { "id": "a", "text": "two operands" },
+            { "id": "b", "text": "return only void" },
+            { "id": "c", "text": "one operand" },
+            { "id": "d", "text": "no input" }
+          ],
+          "answer": "c",
+          "notes": "Unary operators require one operand."
+        },
+        {
+          "type": "mcq",
+          "text": "The operator overloading method must be defined as a ______ method.",
+          "options": [
+            { "id": "a", "text": "public" },
+            { "id": "b", "text": "private" },
+            { "id": "c", "text": "static" },
+            { "id": "d", "text": "virtual" }
+          ],
+          "answer": "c",
+          "notes": "Operator overloading methods must be static."
+        },
+        {
+          "type": "mcq",
+          "text": "Binary operators take ______ operand(s) and can be overloaded.",
+          "options": [
+            { "id": "a", "text": "one" },
+            { "id": "b", "text": "two" },
+            { "id": "c", "text": "three" },
+            { "id": "d", "text": "four" }
+          ],
+          "answer": "b",
+          "notes": "Binary operators work with two operands."
+        },
+        {
+          "type": "mcq",
+          "text": "Binary operators take ______.",
+          "options": [
+            { "id": "a", "text": "three operands" },
+            { "id": "b", "text": "one operand" },
+            { "id": "c", "text": "two operands" },
+            { "id": "d", "text": "no operands" }
+          ],
+          "answer": "c",
+          "notes": "Binary operators require two operands."
+        },
+        {
+          "type": "mcq",
+          "text": "Comparison operators must be ____.",
+          "options": [
+            { "id": "a", "text": "skipped" },
+            { "id": "b", "text": "paired" },
+            { "id": "c", "text": "deleted" },
+            { "id": "d", "text": "ignored" }
+          ],
+          "answer": "b",
+          "notes": "Comparison operators should be implemented in pairs (e.g., == and !=)."
+        },
+        {
+          "type": "mcq",
+          "text": "Assignment operator (=) ____.",
+          "options": [
+            { "id": "a", "text": "copies left to right" },
+            { "id": "b", "text": "stores right into left" },
+            { "id": "c", "text": "compares values" },
+            { "id": "d", "text": "destroys values" }
+          ],
+          "answer": "b",
+          "notes": "The assignment operator stores the right-hand value into the left-hand variable."
+        },
+        {
+          "type": "mcq",
+          "text": "The conditional logical operators ( && , || ) ____ be overloaded directly.",
+          "options": [
+            { "id": "a", "text": "can" },
+            { "id": "b", "text": "cannot" },
+            { "id": "c", "text": "must" },
+            { "id": "d", "text": "should" }
+          ],
+          "answer": "b",
+          "notes": "Conditional logical operators cannot be overloaded directly."
+        },
+        {
+          "type": "mcq",
+          "text": "The assignment operators ( += , -= , = , /= , %= ) ____ be overloaded.",
+          "options": [
+            { "id": "a", "text": "can" },
+            { "id": "b", "text": "cannot" },
+            { "id": "c", "text": "must" },
+            { "id": "d", "text": "should" }
+          ],
+          "answer": "b",
+          "notes": "Assignment operators cannot be overloaded."
+        },
+        {
+          "type": "mcq",
+          "text": "Which of the following CANNOT be overloaded ____.",
+          "options": [
+            { "id": "a", "text": "+" },
+            { "id": "b", "text": "*" },
+            { "id": "c", "text": "=" },
+            { "id": "d", "text": "/" }
+          ],
+          "answer": "c",
+          "notes": "The assignment operator (=) cannot be overloaded."
+        }
+      ]
+    },
+    {
+      "id": "lecture_7",
+      "title": "Inheritance",
+      "questions": [
+        {
+          "type": "mcq",
+          "text": "Inheritance allows one class to inherit class members from ____.",
+          "options": [
+            { "id": "a", "text": "multiple classes" },
+            { "id": "b", "text": "another class" },
+            { "id": "c", "text": "interfaces only" },
+            { "id": "d", "text": "abstract classes only" }
+          ],
+          "answer": "b",
+          "notes": "Inheritance allows a class to inherit from another class."
+        },
+        {
+          "type": "mcq",
+          "text": "The base class is also known as the ____.",
+          "options": [
+            { "id": "a", "text": "child class" },
+            { "id": "b", "text": "parent class" },
+            { "id": "c", "text": "derived class" },
+            { "id": "d", "text": "sub class" }
+          ],
+          "answer": "b",
+          "notes": "The base class is also called the parent class."
+        },
+        {
+          "type": "mcq",
+          "text": "In C#, to inherit from a class, use the ____ symbol.",
+          "options": [
+            { "id": "a", "text": "dot (.)" },
+            { "id": "b", "text": "colon (.)" },
+            { "id": "c", "text": "arrow (->)" },
+            { "id": "d", "text": "equals (=)" }
+          ],
+          "answer": "b",
+          "notes": "The colon (:) is used for inheritance in C#."
+        },
+        {
+          "type": "mcq",
+          "text": "To inherit from a class, use:",
+          "options": [
+            { "id": "a", "text": "->" },
+            { "id": "b", "text": ":" },
+            { "id": "c", "text": ":" },
+            { "id": "d", "text": "new" }
+          ],
+          "answer": "b",
+          "notes": "The colon (:) is the symbol for inheritance."
+        },
+        {
+          "type": "mcq",
+          "text": "Inheritance helps to:",
+          "options": [
+            { "id": "a", "text": "reduce memory" },
+            { "id": "b", "text": "duplicate code" },
+            { "id": "c", "text": "avoid duplicate code" },
+            { "id": "d", "text": "slow down runtime" }
+          ],
+          "answer": "c",
+          "notes": "Inheritance promotes code reuse and avoids duplication."
+        },
+        {
+          "type": "mcq",
+          "text": "A class can inherit from:",
+          "options": [
+            { "id": "a", "text": "a method" },
+            { "id": "b", "text": "another class" },
+            { "id": "c", "text": "static field" },
+            { "id": "d", "text": "array" }
+          ],
+          "answer": "b",
+          "notes": "A class can inherit from another class."
+        },
+        {
+          "type": "mcq",
+          "text": "Abstract classes cannot be _____, but they can be inherited.",
+          "options": [
+            { "id": "a", "text": "overloaded" },
+            { "id": "b", "text": "instantiated" },
+            { "id": "c", "text": "overridden" },
+            { "id": "d", "text": "sealed" }
+          ],
+          "answer": "b",
+          "notes": "Abstract classes cannot be instantiated."
+        },
+        {
+          "type": "mcq",
+          "text": "Abstract class:",
+          "options": [
+            { "id": "a", "text": "can be instantiated" },
+            { "id": "b", "text": "must be private" },
+            { "id": "c", "text": "cannot be inherited" },
+            { "id": "d", "text": "cannot be instantiated" }
+          ],
+          "answer": "d",
+          "notes": "Abstract classes cannot be instantiated."
+        },
+        {
+          "type": "mcq",
+          "text": "Abstract classes are used to:",
+          "options": [
+            { "id": "a", "text": "store data only" },
+            { "id": "b", "text": "restrict access" },
+            { "id": "c", "text": "define common behavior" },
+            { "id": "d", "text": "override fields" }
+          ],
+          "answer": "c",
+          "notes": "Abstract classes define common behavior for derived classes."
+        },
+        {
+          "type": "mcq",
+          "text": "If you don’t want other classes to inherit from a class, use the ______ keyword.",
+          "options": [
+            { "id": "a", "text": "abstract" },
+            { "id": "b", "text": "sealed" },
+            { "id": "c", "text": "static" },
+            { "id": "d", "text": "virtual" }
+          ],
+          "answer": "b",
+          "notes": "The 'sealed' keyword prevents inheritance."
+        },
+        {
+          "type": "mcq",
+          "text": "Sealed class:",
+          "options": [
+            { "id": "a", "text": "must be abstract" },
+            { "id": "b", "text": "cannot be instantiated" },
+            { "id": "c", "text": "cannot be inherited" },
+            { "id": "d", "text": "allows constructor overloading" }
+          ],
+          "answer": "c",
+          "notes": "Sealed classes cannot be inherited."
+        },
+        {
+          "type": "mcq",
+          "text": "When an object is instantiated from a child class, the constructor of the ______ class is called first.",
+          "options": [
+            { "id": "a", "text": "child" },
+            { "id": "b", "text": "parent" },
+            { "id": "c", "text": "abstract" },
+            { "id": "d", "text": "sealed" }
+          ],
+          "answer": "b",
+          "notes": "Parent class constructors are called before child class constructors."
+        },
+        {
+          "type": "mcq",
+          "text": "We use the keyword ______ to call another constructor in the same class.",
+          "options": [
+            { "id": "a", "text": "base" },
+            { "id": "b", "text": "this" },
+            { "id": "c", "text": "super" },
+            { "id": "d", "text": "parent" }
+          ],
+          "answer": "b",
+          "notes": "The 'this' keyword calls another constructor in the same class."
+        },
+        {
+          "type": "mcq",
+          "text": "We use the keyword ______ to call another constructor in the 'base' (or parent) class.",
+          "options": [
+            { "id": "a", "text": "this" },
+            { "id": "b", "text": "base" },
+            { "id": "c", "text": "super" },
+            { "id": "d", "text": "parent" }
+          ],
+          "answer": "b",
+          "notes": "The 'base' keyword calls a parent class constructor."
+        },
+        {
+          "type": "mcq",
+          "text": "The protected access modifier is used to specify that the member can only be accessed by code in the same class or in a ______.",
+          "options": [
+            { "id": "a", "text": "static class" },
+            { "id": "b", "text": "derived class" },
+            { "id": "c", "text": "abstract class" },
+            { "id": "d", "text": "sealed class" }
+          ],
+          "answer": "b",
+          "notes": "Protected members are accessible within the same class and derived classes."
+        }
+      ]
+    }
+  ]
+}
+;
+
+        const state = {
+            currentLectureId: null, answers: {}, shownAnswers: {},
+            quizMode: 'list', currentQuestionIndexInLecture: 0, 
+            viewingResultsForLectureId: null 
+        };
+
+        const lectureNav = document.getElementById('lectureNav');
+        const quizContent = document.getElementById('quizContent');
+        const progressText = document.getElementById('progressText');
+        const progressFill = document.getElementById('progressFill');
+        const completedCount = document.getElementById('completedCount');
+        const quizTitleElement = document.getElementById('quizTitleElement');
+        const quizSubtitleElement = document.getElementById('quizSubtitleElement');
+        const darkModeToggleBtn = document.getElementById('darkModeToggleBtn');
+        const viewModeSelector = document.getElementById('viewModeSelector');
+        const progressContainer = document.getElementById('progressContainer');
+
+        function applyTheme(isDark) {
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                if (darkModeToggleBtn) darkModeToggleBtn.textContent = 'Light Mode';
+            } else {
+                document.body.classList.remove('dark-mode');
+                if (darkModeToggleBtn) darkModeToggleBtn.textContent = 'Dark Mode';
+            }
+        }
+
+        function toggleDarkModePreference() {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            applyTheme(!isDarkMode);
+            localStorage.setItem('darkModePreferred', JSON.stringify(!isDarkMode));
+        }
+
+        function loadDarkModePreference() {
+            const preference = localStorage.getItem('darkModePreferred');
+            let useDarkMode = false;
+            if (preference !== null) { useDarkMode = JSON.parse(preference); } 
+            else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) { useDarkMode = true; }
+            applyTheme(useDarkMode);
+        }
+
+        function displayMathJaxWarning(message) {
+            console.warn("MathJax Warning:", message);
+        }
+
+        function initQuiz() {
+            console.log("Initializing quiz...");
+            loadDarkModePreference();
+            if (darkModeToggleBtn) {
+                darkModeToggleBtn.addEventListener('click', toggleDarkModePreference);
+            }
+
+            quizData.lectures.forEach(lecture => {
+                lecture.questions.forEach((question, index) => {
+                    question.internal_id = `${lecture.id}_q${index}`;
+                });
+            });
+            
+            const savedMode = localStorage.getItem('quizMode');
+            if (savedMode && (savedMode === 'list' || savedMode === 'single')) {
+                state.quizMode = savedMode;
+            }
+            // Set initial selected state for view mode labels
+            document.querySelectorAll('.view-mode-selector label').forEach(lbl => {
+                const radio = lbl.querySelector('input[name="viewMode"]');
+                if (radio && radio.value === state.quizMode) {
+                    radio.checked = true;
+                    lbl.classList.add('view-mode-selected');
+                } else {
+                    lbl.classList.remove('view-mode-selected');
+                }
+            });
+
+
+            viewModeSelector.querySelectorAll('input[name="viewMode"]').forEach(radio => {
+                radio.addEventListener('change', (event) => {
+                    state.quizMode = event.target.value;
+                    localStorage.setItem('quizMode', state.quizMode);
+                    
+                    document.querySelectorAll('.view-mode-selector label').forEach(lbl => lbl.classList.remove('view-mode-selected'));
+                    event.target.parentElement.classList.add('view-mode-selected');
+
+                    state.viewingResultsForLectureId = null; 
+                    state.currentQuestionIndexInLecture = 0; 
+                    renderQuizContent(); 
+                });
+            });
+
+            if (!quizData || !quizData.lectures || quizData.lectures.length === 0) {
+                console.error("Critical Error: quizData is not defined or has no lectures. Quiz cannot be loaded.");
+                quizContent.innerHTML = `<p style="text-align:center; font-weight:bold;">Quiz cannot be loaded. Please try again later.</p>`;
+                if(viewModeSelector) viewModeSelector.style.display = 'none';
+                if(lectureNav) lectureNav.style.display = 'none';
+                if(progressContainer) progressContainer.style.display = 'none';
+                return;
+            }
+            if (quizData.quizTitle) quizTitleElement.textContent = quizData.quizTitle;
+            if (quizData.quizSubtitle) quizSubtitleElement.textContent = quizData.quizSubtitle;
+            document.title = quizData.quizTitle || "Interactive Quiz";
+
+            state.currentLectureId = quizData.lectures[0].id; 
+
+            if (typeof MathJax === "undefined" || typeof MathJax.typesetPromise === "undefined") {
+                 displayMathJaxWarning("MathJax library is not loaded or not ready. Formulas may not render correctly.");
+            }
+
+            createLectureNavigation();
+            renderQuizContent(); 
+            updateProgress();
+        }
+
+        function createLectureNavigation() {
+            lectureNav.innerHTML = '';
+            quizData.lectures.forEach(lecture => {
+                const button = document.createElement('button');
+                button.className = 'lecture-btn';
+                button.innerHTML = `${lecture.title} <span class="status-indicator"></span>`;
+                button.dataset.lectureId = lecture.id;
+                if (lecture.id === state.currentLectureId) button.classList.add('active');
+
+                button.addEventListener('click', () => {
+                    state.currentLectureId = lecture.id;
+                    state.currentQuestionIndexInLecture = 0; 
+                    state.viewingResultsForLectureId = null; 
+                    document.querySelectorAll('.lecture-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    renderQuizContent();
+                });
+                lectureNav.appendChild(button);
+            });
+            updateLectureButtonStatus();
+        }
+        
+        function getQuestionTypeTitle(type) {
+            switch(type) {
+                case "mcq": return "Multiple Choice Questions";
+                case "tf": return "True or False Questions";
+                default: return "Questions";
+            }
+        }
+
+        function renderQuizContent() {
+            quizContent.innerHTML = ''; 
+            progressContainer.style.display = 'flex'; 
+
+            if (state.viewingResultsForLectureId) {
+                renderResultsPage(state.viewingResultsForLectureId);
+            } else if (state.quizMode === 'single' && state.currentLectureId) {
+                displaySingleQuestionInterface();
+            } else if (state.quizMode === 'list' && state.currentLectureId) {
+                renderListQuestionView();
+            } else {
+                console.warn("RenderQuizContent: No specific view to render (e.g., no current lecture or unknown mode).")
+                quizContent.innerHTML = '<p style="text-align:center;">Please select a lecture to begin.</p>';
+            }
+            typesetMathJaxForContent();
+        }
+
+        function renderListQuestionView() {
+            const currentLectureData = quizData.lectures.find(lec => lec.id === state.currentLectureId);
+            if (!currentLectureData) { 
+                console.error("List View Error: Lecture data not found for ID:", state.currentLectureId);
+                quizContent.innerHTML = '<p style="text-align:center;">Content for this lecture is currently unavailable.</p>'; return; 
+            }
+
+            const chapterTitle = document.createElement('h2');
+            chapterTitle.className = 'chapter-title';
+            chapterTitle.textContent = currentLectureData.title;
+            quizContent.appendChild(chapterTitle);
+
+            const questionsByType = currentLectureData.questions.reduce((acc, q) => {
+                acc[q.type] = acc[q.type] || []; acc[q.type].push(q); return acc;
+            }, {});
+
+            let questionCounterInType = 0;
+            for (const type in questionsByType) {
+                const typeTitle = document.createElement('h3');
+                typeTitle.className = 'question-type-title';
+                typeTitle.textContent = getQuestionTypeTitle(type);
+                quizContent.appendChild(typeTitle);
+                
+                questionCounterInType = 0; 
+                questionsByType[type].forEach((question) => {
+                    questionCounterInType++;
+                    renderQuestionBlock(question, questionCounterInType, type, currentLectureData.id, true); 
+                });
+            }
+        }
+        
+        function displaySingleQuestionInterface() {
+            const currentLectureData = quizData.lectures.find(lec => lec.id === state.currentLectureId);
+            if (!currentLectureData || currentLectureData.questions.length === 0) {
+                console.warn("Single Question View Warning: No questions or lecture data missing for ID:", state.currentLectureId);
+                quizContent.innerHTML = '<p style="text-align:center;">This lecture has no questions, or the content is unavailable.</p>';
+                return;
+            }
+            progressContainer.style.display = 'flex';
+
+            const singleQContainer = document.createElement('div');
+            singleQContainer.id = 'singleQuestionContainer';
+            quizContent.appendChild(singleQContainer);
+
+            const navContainer = document.createElement('div');
+            navContainer.id = 'singleQuestionNavContainer';
+            quizContent.appendChild(navContainer);
+            
+            renderCurrentSingleQuestion();
+        }
+
+        function renderCurrentSingleQuestion() {
+            const singleQContainer = document.getElementById('singleQuestionContainer');
+            const navContainer = document.getElementById('singleQuestionNavContainer');
+            if (!singleQContainer || !navContainer) {
+                 console.error("Single question containers not found in DOM for rendering.");
+                 quizContent.innerHTML = "<p style='text-align:center;'>An error occurred loading the question. Please try again.</p>"
+                 return;
+            }
+            singleQContainer.innerHTML = '';
+            navContainer.innerHTML = '';
+
+            const currentLectureData = quizData.lectures.find(lec => lec.id === state.currentLectureId);
+            const question = currentLectureData.questions[state.currentQuestionIndexInLecture];
+
+            if (!question) {
+                console.error("Single question not found at index", state.currentQuestionIndexInLecture, "for lecture", state.currentLectureId);
+                singleQContainer.innerHTML = "<p style='text-align:center;'>Error: Question data is missing.</p>";
+                return;
+            }
+            
+            const questionProgressText = document.createElement('p');
+            questionProgressText.textContent = `Question ${state.currentQuestionIndexInLecture + 1} of ${currentLectureData.questions.length}`;
+            questionProgressText.style.textAlign = 'center';
+            questionProgressText.style.fontWeight = 'bold';
+            questionProgressText.style.marginBottom = '15px';
+            singleQContainer.appendChild(questionProgressText);
+
+            renderQuestionBlock(question, state.currentQuestionIndexInLecture + 1, question.type, currentLectureData.id, false, singleQContainer);
+
+            const nextButton = document.createElement('button');
+            nextButton.id = 'nextSingleQuestionBtn';
+            if (state.currentQuestionIndexInLecture >= currentLectureData.questions.length - 1) {
+                nextButton.textContent = 'Finish Lecture & See Results';
+            } else {
+                nextButton.textContent = 'Next Question';
+            }
+            nextButton.addEventListener('click', handleSingleQuestionNext);
+            navContainer.appendChild(nextButton);
+
+            typesetMathJaxForContent(); 
+        }
+        
+        function handleSingleQuestionNext() {
+            const currentLectureData = quizData.lectures.find(lec => lec.id === state.currentLectureId);
+            const question = currentLectureData.questions[state.currentQuestionIndexInLecture];
+            const questionId = question.internal_id;
+
+            const selectedOption = document.querySelector(`input[name="${questionId}"]:checked`);
+            if (selectedOption) {
+                state.answers[questionId] = selectedOption.value;
+                const blockElement = document.getElementById(`block-${questionId}`);
+                if(blockElement) blockElement.classList.add('answered');
+            }
+            updateProgress(); 
+
+            if (state.currentQuestionIndexInLecture >= currentLectureData.questions.length - 1) {
+                state.viewingResultsForLectureId = state.currentLectureId;
+                renderQuizContent();
+            } else {
+                state.currentQuestionIndexInLecture++;
+                renderCurrentSingleQuestion();
+            }
+        }
+
+        function renderQuestionBlock(question, displayNum, questionType, lectureId, includeShowAnswerBtn, parentContainer = quizContent) {
+            const questionId = question.internal_id; 
+            
+            const questionBlock = document.createElement('div');
+            questionBlock.className = 'question-block';
+            questionBlock.id = `block-${questionId}`;
+            if (state.answers[questionId]) questionBlock.classList.add('answered');
+
+            const questionTextP = document.createElement('p');
+            questionTextP.className = 'question-text';
+            questionTextP.innerHTML = `${displayNum}. ${question.text}`;
+            questionBlock.appendChild(questionTextP);
+
+            if (question.imageSrc) { 
+                const img = document.createElement('img');
+                img.src = question.imageSrc;
+                img.alt = `Image for question ${displayNum}`;
+                questionTextP.appendChild(img); 
+            }
+
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'options';
+            question.options.forEach(option => {
+                const label = document.createElement('label');
+                label.htmlFor = `${questionId}_${option.id}`; // Associate label with radio for accessibility
+                
+                const radio = document.createElement('input');
+                radio.type = 'radio'; radio.name = questionId; radio.value = option.id;
+                radio.id = `${questionId}_${option.id}`; // Unique ID for radio
+                
+                const optionTextSpan = document.createElement('span');
+                optionTextSpan.innerHTML = `${option.text}`;
+                
+                label.appendChild(radio); 
+                label.appendChild(optionTextSpan);
+                optionsDiv.appendChild(label);
+
+                if (state.answers[questionId] === option.id) {
+                    radio.checked = true;
+                    label.classList.add('option-selected'); 
+                }
+
+                radio.addEventListener('change', (event) => {
+                    state.answers[questionId] = event.target.value;
+                    const currentQBlock = document.getElementById(`block-${questionId}`);
+                    if (currentQBlock) {
+                        currentQBlock.classList.add('answered');
+                        const allLabelsInBlock = currentQBlock.querySelectorAll('.options label');
+                        allLabelsInBlock.forEach(lbl => lbl.classList.remove('option-selected'));
+                    }
+                    event.target.parentElement.classList.add('option-selected');
+                    updateProgress();
+                });
+            });
+            questionBlock.appendChild(optionsDiv);
+
+            if (includeShowAnswerBtn) {
+                const showAnswerBtn = document.createElement('button');
+                showAnswerBtn.className = 'show-answer-btn';
+                showAnswerBtn.textContent = state.shownAnswers[questionId] ? "Hide Answer" : "Show Answer";
+                showAnswerBtn.onclick = () => toggleAnswer(showAnswerBtn, questionId, question); 
+                questionBlock.appendChild(showAnswerBtn);
+
+                const answerDiv = document.createElement('div');
+                answerDiv.className = 'answer';
+                const correctAnswerOption = question.options.find(opt => opt.id === question.answer);
+                let answerHTML = `<strong>Correct Answer:</strong> ${correctAnswerOption ? correctAnswerOption.text : question.answer}`;
+                if (question.notes) answerHTML += `<br><em>${question.notes}</em>`;
+                answerDiv.innerHTML = answerHTML;
+                answerDiv.style.display = state.shownAnswers[questionId] ? 'block' : 'none';
+                questionBlock.appendChild(answerDiv);
+            }
+            parentContainer.appendChild(questionBlock);
+        }
+
+        function toggleAnswer(btn, questionId, questionData) {
+            const answerDiv = btn.nextElementSibling;
+            if (!answerDiv || !answerDiv.classList.contains('answer')) {
+                console.error("[toggleAnswer] Answer div not found for questionId:", questionId);
+                return; 
+            }
+            const isCurrentlyHidden = answerDiv.style.display === 'none' || answerDiv.style.display === '';
+            
+            if (isCurrentlyHidden) {
+                answerDiv.style.display = 'block';
+                btn.textContent = 'Hide Answer';
+                state.shownAnswers[questionId] = true;
+                const correctAnswerOption = questionData.options.find(opt => opt.id === questionData.answer);
+                const answerTextForMathJax = correctAnswerOption ? correctAnswerOption.text : '';
+                if (((answerTextForMathJax && answerTextForMathJax.includes('\\')) || (questionData.notes && questionData.notes.includes('\\'))) &&
+                    typeof MathJax !== "undefined" && MathJax.typesetPromise) {
+                    MathJax.typesetPromise([answerDiv]).catch(err => console.error("[toggleAnswer] Error re-typesetting answer div:", err));
+                }
+            } else {
+                answerDiv.style.display = 'none';
+                btn.textContent = 'Show Answer';
+                state.shownAnswers[questionId] = false;
+            }
+        }
+        
+        function renderResultsPage(lectureId) {
+            quizContent.innerHTML = ''; 
+            progressContainer.style.display = 'none'; 
+
+            const lectureData = quizData.lectures.find(lec => lec.id === lectureId);
+            if (!lectureData) { 
+                console.error("Results Page Error: Lecture data not found for ID:", lectureId);
+                quizContent.innerHTML = '<p style="text-align:center;">Could not load results for this lecture.</p>'; return; 
+            }
+
+            let correctAnswers = 0;
+            const totalQuestionsInLecture = lectureData.questions.length;
+
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'results-summary';
+            quizContent.appendChild(summaryDiv);
+            
+            const resultsTitle = document.createElement('h2');
+            resultsTitle.textContent = `Results for: ${lectureData.title}`;
+            summaryDiv.appendChild(resultsTitle);
+
+            lectureData.questions.forEach((question, index) => {
+                const questionId = question.internal_id;
+                const userAnswerId = state.answers[questionId];
+                const isCorrect = userAnswerId === question.answer;
+                if (isCorrect) correctAnswers++;
+
+                const resultBlock = document.createElement('div');
+                resultBlock.className = `result-question-block ${isCorrect ? 'correct' : 'incorrect'}`;
+                
+                const qText = document.createElement('p');
+                qText.innerHTML = `<strong>${index + 1}. ${question.text}</strong>`;
+                resultBlock.appendChild(qText);
+
+                const userAnswerText = question.options.find(opt => opt.id === userAnswerId)?.text || "Not answered";
+                const pUserAnswer = document.createElement('p');
+                pUserAnswer.innerHTML = `Your answer: <span class="user-answer">${userAnswerText}</span>`;
+                resultBlock.appendChild(pUserAnswer);
+
+                if (!isCorrect) {
+                    const correctAnswerFull = question.options.find(opt => opt.id === question.answer);
+                    const pCorrectAnswer = document.createElement('p');
+                    pCorrectAnswer.innerHTML = `Correct answer: <span class="correct-answer-text">${correctAnswerFull ? correctAnswerFull.text : question.answer}</span>`;
+                    resultBlock.appendChild(pCorrectAnswer);
+                }
+                if (question.notes) {
+                    const pNotes = document.createElement('p');
+                    pNotes.className = 'notes';
+                    pNotes.innerHTML = question.notes; 
+                    resultBlock.appendChild(pNotes);
+                }
+                quizContent.appendChild(resultBlock);
+            });
+
+            const scorePercentage = totalQuestionsInLecture > 0 ? Math.round((correctAnswers / totalQuestionsInLecture) * 100) : 0;
+            const scoreP = document.createElement('p');
+            scoreP.innerHTML = `You scored ${correctAnswers} out of ${totalQuestionsInLecture} (${scorePercentage}%).`;
+            summaryDiv.appendChild(scoreP);
+            
+            const actionButtonsDiv = document.createElement('div');
+            actionButtonsDiv.id = 'singleQuestionNavContainer'; 
+            
+            const retryLectureBtn = document.createElement('button');
+            retryLectureBtn.textContent = 'Retry This Lecture';
+            retryLectureBtn.onclick = () => {
+                lectureData.questions.forEach(q => delete state.answers[q.internal_id]);
+                state.currentQuestionIndexInLecture = 0;
+                state.viewingResultsForLectureId = null;
+                updateProgress(); 
+                updateLectureButtonStatus(); 
+                renderQuizContent(); 
+            };
+            actionButtonsDiv.appendChild(retryLectureBtn);
+            quizContent.appendChild(actionButtonsDiv);
+
+            typesetMathJaxForContent();
+        }
+
+        function updateLectureButtonStatus() {
+            const lectureButtons = document.querySelectorAll('.lecture-btn');
+            lectureButtons.forEach(button => {
+                const lectureId = button.dataset.lectureId;
+                const lectureData = quizData.lectures.find(lec => lec.id === lectureId);
+                if (!lectureData) return;
+                let answeredInLecture = 0;
+                lectureData.questions.forEach(q => {
+                    if (state.answers[q.internal_id]) answeredInLecture++;
+                });
+                const statusIndicator = button.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    if (lectureData.questions.length > 0 && answeredInLecture === lectureData.questions.length) {
+                        statusIndicator.classList.add('completed');
+                    } else {
+                        statusIndicator.classList.remove('completed');
+                    }
+                }
+            });
+        }
+
+        function updateProgress() {
+            let totalOverallQuestions = 0;
+            quizData.lectures.forEach(lecture => { totalOverallQuestions += lecture.questions.length; });
+            const answeredOverallQuestions = Object.keys(state.answers).length;
+            const progressPercent = totalOverallQuestions > 0 ? Math.round((answeredOverallQuestions / totalOverallQuestions) * 100) : 0;
+
+            progressFill.style.width = `${progressPercent}%`;
+            progressText.textContent = `Progress: ${progressPercent}%`;
+            completedCount.textContent = `${answeredOverallQuestions}/${totalOverallQuestions} answered`;
+            updateLectureButtonStatus();
+        }
+        
+        function typesetMathJaxForContent() {
+            if (typeof MathJax !== "undefined" && MathJax.typesetPromise) {
+                const elementToTypeset = quizContent.hasChildNodes() ? quizContent : document.body;
+                MathJax.typesetPromise([elementToTypeset])
+                    .then(() => { console.log("[MathJax] typesetPromise successful for element:", elementToTypeset); })
+                    .catch(err => {
+                        console.error("[MathJax] typesetPromise failed for element:", elementToTypeset, err);
+                        displayMathJaxWarning("Error rendering formulas. Technical details in console.");
+                    });
+            } else { console.warn("[MathJax] typesetPromise not available or MathJax not fully loaded."); }
+        }
+
+        document.addEventListener('DOMContentLoaded', initQuiz);
+    </script>
+</body>
+</html>
